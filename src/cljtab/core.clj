@@ -1,5 +1,6 @@
 (ns cljtab.core
   (:require [clojure.string :as str]
+            [clojure.edn :as edn]
             [cljtab.completion :as completion]
             [cljtab.setup :as setup]))
 
@@ -19,4 +20,13 @@
   (let [current-dir (System/getProperty "user.dir")
         candidates (completion/get-completion-candidates current-dir current-word prev-word all-words)]
     (println (str/join " " candidates))))
+
+(defn complete-from-args
+  "Parse command line args and provide completion candidates - for bb tasks"
+  [args]
+  (let [parsed-args (-> (first args)
+                        (or "{}")
+                        edn/read-string)]
+    (complete parsed-args)))
+
 

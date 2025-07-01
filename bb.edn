@@ -1,0 +1,20 @@
+{:paths ["src" "test"]
+
+ :tasks
+ {:requires ([cljtab.core :as core]
+             [cljtab.core-test :as test])
+
+  setup {:doc "Install bash completion integration"
+         :task (core/setup {})}
+
+  generate {:doc "Generate completion candidates for current directory"
+            :task (core/generate {})}
+
+  complete {:doc "Provide completion candidates for bash"
+            :task (core/complete-from-args *command-line-args*)}
+
+  run-tests {:doc "Run tests"
+             :task (test/run-tests {})}}
+
+ ;; bbin configuration
+ :bbin/bin {cljtab {}}}

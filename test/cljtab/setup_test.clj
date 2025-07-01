@@ -38,7 +38,8 @@
   (testing "script contains required components"
     (let [script setup/bash-completion-script]
       (is (str/includes? script "_clj_completion"))
-      (is (str/includes? script "clj -Tcljtab complete"))
+      (is (or (str/includes? script "cljtab complete")
+              (str/includes? script "bb complete")))
       (is (str/includes? script "complete -F _clj_completion clj")))))
 
 (deftest test-installation
@@ -46,24 +47,24 @@
     (let [output (with-out-str (setup/install-bash-completion))
           completion-file (setup/get-completion-file-path)
           bashrc-path (setup/get-bashrc-path)]
-      
+
       ;; Check output messages
       (is (str/includes? output "Created completion file"))
       (is (str/includes? output "Created"))
       (is (str/includes? output "with completion source"))
-      
+
       ;; Check files exist
       (is (.exists (io/file completion-file)))
       (is (.exists (io/file bashrc-path)))
-      
+
       ;; Check completion file content
       (is (str/includes? (slurp completion-file) "_clj_completion"))
-      
+
       ;; Check bashrc content
       (let [bashrc-content (slurp bashrc-path)]
         (is (str/includes? bashrc-content completion-file))
         (is (str/includes? bashrc-content "source")))))
-  
+
   (testing "existing bashrc append"
     (spit (setup/get-bashrc-path) "# existing content\\n")
     (let [output (with-out-str (setup/install-bash-completion))]
@@ -71,7 +72,7 @@
       (let [content (slurp (setup/get-bashrc-path))]
         (is (str/includes? content "# existing content"))
         (is (str/includes? content "source")))))
-  
+
   (testing "already installed detection"
     ;; First installation
     (setup/install-bash-completion)

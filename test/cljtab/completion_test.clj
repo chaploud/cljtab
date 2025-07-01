@@ -22,7 +22,7 @@
     (let [candidates (completion/get-completion-candidates test-project-dir "" "clj" ["clj"])]
       (is (some #(= "-A" %) candidates))
       (is (some #(= "-X" %) candidates))))
-  
+
   (testing "Alias completion after -A"
     (let [candidates (completion/get-completion-candidates test-project-dir ":d" "-A" ["clj" "-A" ":d"])]
       (is (some #(= ":dev" %) candidates))
@@ -47,7 +47,7 @@
   (testing "Empty inputs"
     (let [candidates (completion/get-completion-candidates test-project-dir "" "" [])]
       (is (some #(= "-A" %) candidates))))
-  
+
   (testing "No deps.edn directory"
     (let [temp-dir "/tmp/no-deps"]
       (.mkdirs (io/file temp-dir))

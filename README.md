@@ -1,13 +1,21 @@
 # cljtab - Clojure CLI Tab Completion
 
-Simple bash tab completion for Clojure CLI commands.
+Simple bash tab completion for Clojure CLI commands. Fast startup with Babashka.
 
 ## Installation
 
-Install cljtab as a Clojure CLI tool:
+Install cljtab with bbin (requires babashka):
 
 ```bash
-clj -Ttools install io.github.chaploud/cljtab '{:git/tag "v0.1.0"}' :as cljtab
+bbin install io.github.chaploud/cljtab
+```
+
+Or clone and install locally:
+
+```bash
+git clone https://github.com/chaploud/cljtab.git
+cd cljtab
+bbin install .
 ```
 
 ## Setup
@@ -15,7 +23,7 @@ clj -Ttools install io.github.chaploud/cljtab '{:git/tag "v0.1.0"}' :as cljtab
 Install bash completion:
 
 ```bash
-clj -Tcljtab setup
+cljtab setup
 source ~/.bashrc
 ```
 
@@ -26,7 +34,7 @@ source ~/.bashrc
 Generate completion candidates for current directory:
 
 ```bash
-clj -Tcljtab generate
+cljtab generate
 ```
 
 ### Tab Completion
