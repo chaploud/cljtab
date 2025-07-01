@@ -1,0 +1,9 @@
+.idea/
+
+.clj-kondo/
+.lsp/
+.calva/
+.cpcache/
+.cache/
+
+target/
