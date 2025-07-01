@@ -6,12 +6,12 @@
 
 (defn setup
   "Install bash completion integration - public tool function"
-  [_args]
+  []
   (setup/install-bash-completion))
 
 (defn generate
   "Generate completion candidates for current directory - public tool function"
-  [_args]
+  []
   (completion/generate-candidates (System/getProperty "user.dir")))
 
 (defn complete
@@ -21,12 +21,22 @@
         candidates (completion/get-completion-candidates current-dir current-word prev-word all-words)]
     (println (str/join " " candidates))))
 
-(defn complete-from-args
-  "Parse command line args and provide completion candidates - for bb tasks"
-  [args]
-  (let [parsed-args (-> (first args)
-                        (or "{}")
-                        edn/read-string)]
-    (complete parsed-args)))
 
-
+(defn -main
+  "Main entry point for cljtab command line tool"
+  [& args]
+  (case (first args)
+    "setup" (setup)
+    "generate" (generate)
+    "complete" (let [parsed-args (-> (second args)
+                                     (or "{}")
+                                     edn/read-string)]
+                 (complete parsed-args))
+    (do (println "cljtab - Clojure CLI Tab Completion")
+        (println "")
+        (println "Usage: cljtab <command>")
+        (println "")
+        (println "Commands:")
+        (println "  setup     Install bash completion integration")
+        (println "  generate  Generate completion candidates for current directory")
+        (println "  complete  Provide completion candidates for bash"))))
