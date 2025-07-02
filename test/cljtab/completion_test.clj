@@ -1,6 +1,7 @@
 (ns cljtab.completion-test
   (:require [clojure.test :refer [deftest testing is use-fixtures]]
             [babashka.fs :as fs]
+            [clojure.string :as str]
             [cljtab.completion :as completion]))
 
 (def test-project-dir "/tmp/cljtab-test-project")
@@ -25,25 +26,43 @@
       (is (some #(= "-A" %) candidates))
       (is (some #(= "-X" %) candidates))))
 
-  (testing "Alias completion after -A"
-    (let [candidates (completion/get-completion-candidates test-project-dir ":d" "-A" ["clj" "-A" ":d"])]
+  (testing "Alias completion after -A with generated cache"
+    (let [_ (completion/generate-candidates test-project-dir)
+          candidates (completion/get-completion-candidates test-project-dir ":d" "-A" ["clj" "-A" ":d"])]
       (is (some #(= ":dev" %) candidates))
       (is (some #(= ":deps" %) candidates))))
 
-  (testing "Function completion after -X:deps"
-    (let [candidates (completion/get-completion-candidates test-project-dir "l" "-X:deps" ["clj" "-X:deps" "l"])]
+  (testing "Function completion after -X:deps with generated cache"
+    (let [_ (completion/generate-candidates test-project-dir)
+          candidates (completion/get-completion-candidates test-project-dir "l" "-X:deps" ["clj" "-X:deps" "l"])]
       (is (some #(= "list" %) candidates))
       (is (some #(= "tree" %) candidates))))
 
-  (testing "Tools completion after -Ttools"
-    (let [candidates (completion/get-completion-candidates test-project-dir "i" "-Ttools" ["clj" "-Ttools" "i"])]
+  (testing "Tools completion after -Ttools with generated cache"
+    (let [_ (completion/generate-candidates test-project-dir)
+          candidates (completion/get-completion-candidates test-project-dir "i" "-Ttools" ["clj" "-Ttools" "i"])]
       (is (some #(= "install" %) candidates)))))
 
 (deftest test-cache-operations
   (testing "Cache generation and loading"
     (let [generated (completion/generate-candidates test-project-dir)
           loaded (completion/load-cached-candidates test-project-dir)]
-      (is (= (:base-options generated) (:base-options loaded))))))
+      (is (= (:base-options generated) (:base-options loaded)))))
+
+  (testing "Find nearest cache file"
+    (let [_ (completion/generate-candidates test-project-dir)
+          subdir (str test-project-dir "/subdir")
+          deep-subdir (str subdir "/deep")]
+      (fs/create-dirs deep-subdir)
+      (let [cache-path (completion/find-nearest-cache-file deep-subdir)]
+        (is (some? cache-path))
+        (is (str/includes? cache-path test-project-dir)))))
+
+  (testing "Cache file path uses full directory structure"
+    (let [cache-path (completion/cache-file-path test-project-dir)]
+      (is (str/includes? cache-path test-project-dir))
+      (is (str/includes? cache-path "/.cache/cljtab"))
+      (is (str/ends-with? cache-path "/candidates.edn")))))
 
 (deftest test-edge-cases
   (testing "Empty inputs"

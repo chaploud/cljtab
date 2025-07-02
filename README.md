@@ -61,10 +61,18 @@ cljtab setup both
 
 ### Generate Cache
 
-Generate completion candidates for current directory:
+Generate completion candidates for current directory (must be run in a directory with deps.edn):
 
 ```bash
 cljtab generate
+```
+
+### Clean Installation
+
+Remove all cache files and shell configuration:
+
+```bash
+cljtab clean
 ```
 
 ### Tab Completion
@@ -77,6 +85,8 @@ clj -X:deps <TAB>  # Shows :deps functions: list tree find-versions prep
 clj -Ttools <TAB>  # Shows tools functions: install install-latest list
 ```
 
+The completion system automatically searches for the nearest cache file in parent directories, allowing you to work in subdirectories of your project.
+
 ## Files Created
 
 ### Bash
@@ -88,7 +98,9 @@ clj -Ttools <TAB>  # Shows tools functions: install install-latest list
 - **Changes to .zshrc**: Adds completion directory to fpath and enables completion
 
 ### Cache
-- **Cache**: `~/.cache/cljtab/<project-path>/candidates.edn`
+- **Cache**: `~/.cache/cljtab/<full-project-path>/candidates.edn`
+  - Cache files are stored using the full directory path structure
+  - Completion searches for the nearest cache file in parent directories
 
 ## Shell Configuration Changes
 

@@ -28,9 +28,8 @@
 (defn cache-file-path
   "Generate cache file path for a given project directory."
   [project-dir]
-  (let [home (System/getProperty "user.home")
-        encoded-path (str/replace project-dir "/" "_")]
-    (str home "/.cache/cljtab/" encoded-path "/candidates.edn")))
+  (let [home (System/getProperty "user.home")]
+    (str home "/.cache/cljtab" project-dir "/candidates.edn")))
 
 (defn deps-edn-exists?
   "Check if deps.edn exists in the given directory."
@@ -71,30 +70,44 @@
     (println "Cache file:" cache-path)
     all-candidates))
 
+(defn find-nearest-cache-file
+  "Find the nearest cache file in parent directories from the given directory."
+  [dir]
+  (let [home (System/getProperty "user.home")
+        cache-base (str home "/.cache/cljtab")]
+    (loop [current-dir dir]
+      (let [cache-path (str cache-base current-dir "/candidates.edn")]
+        (cond
+          (fs/exists? cache-path) cache-path
+          (= current-dir "/") nil
+          :else (recur (str "/" (str/join "/" (drop-last (str/split current-dir #"/"))))))))))
+
 (defn load-cached-candidates
   "Load cached completion candidates or generate new ones if cache doesn't exist."
   [dir]
-  (let [cache-path (cache-file-path dir)]
+  (let [cache-path (find-nearest-cache-file dir)]
     (try
-      (when (fs/exists? cache-path)
+      (when cache-path
         (edn/read-string (slurp cache-path)))
       (catch Exception _
-        (generate-candidates dir)))))
+        nil))))
 
 (defn get-completion-candidates
   "Get appropriate completion candidates based on context."
   [dir _current-word prev-word all-words]
-  (let [candidates (or (load-cached-candidates dir) (generate-candidates dir))
-        {:keys [base-options builtin-tools builtin-aliases project-aliases
-                deps-functions tools-functions]} candidates]
-    (cond
-      (= prev-word "-A") (concat builtin-aliases project-aliases)
-      (= prev-word "-X") (concat builtin-aliases project-aliases)
-      (and (>= (count all-words) 2)
-           (= (nth all-words (- (count all-words) 2)) "-X:deps")) deps-functions
-      (= prev-word "-T") (concat builtin-tools builtin-aliases project-aliases)
-      (and (>= (count all-words) 2)
-           (= (nth all-words (- (count all-words) 2)) "-Ttools")) tools-functions
-      (= prev-word "-M") (concat builtin-aliases project-aliases)
-      (= prev-word "-P") ["-A" "-X" "-T" "-M"]
-      :else base-options)))
+  (let [candidates (load-cached-candidates dir)]
+    (if candidates
+      (let [{:keys [base-options builtin-tools builtin-aliases project-aliases
+                    deps-functions tools-functions]} candidates]
+        (cond
+          (= prev-word "-A") (concat builtin-aliases project-aliases)
+          (= prev-word "-X") (concat builtin-aliases project-aliases)
+          (and (>= (count all-words) 2)
+               (= (nth all-words (- (count all-words) 2)) "-X:deps")) deps-functions
+          (= prev-word "-T") (concat builtin-tools builtin-aliases project-aliases)
+          (and (>= (count all-words) 2)
+               (= (nth all-words (- (count all-words) 2)) "-Ttools")) tools-functions
+          (= prev-word "-M") (concat builtin-aliases project-aliases)
+          (= prev-word "-P") ["-A" "-X" "-T" "-M"]
+          :else base-options))
+      base-options)))

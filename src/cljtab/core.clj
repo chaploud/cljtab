@@ -16,6 +16,11 @@
   []
   (completion/generate-candidates (System/getProperty "user.dir")))
 
+(defn clean
+  "Clean up cljtab installation - public tool function"
+  []
+  (setup/clean-cljtab))
+
 (defn complete
   "Provide completion candidates for bash - public tool function"
   [{:keys [current-word prev-word all-words] :or {current-word "" prev-word "" all-words []}}]
@@ -32,6 +37,7 @@
               (setup (second args))
               (setup))
     "generate" (generate)
+    "clean" (clean)
     "complete" (let [parsed-args (-> (second args)
                                      (or "{}")
                                      edn/read-string)]
@@ -44,4 +50,5 @@
         (println "  setup [shell]  Install shell completion integration")
         (println "                 shell: bash, zsh, both (default: auto-detect)")
         (println "  generate       Generate completion candidates for current directory")
+        (println "  clean          Remove all cache files and shell configuration")
         (println "  complete       Provide completion candidates for shell"))))

@@ -170,6 +170,40 @@ _clj_completion \"$@\"")
 
         (println "Please run: source ~/.bashrc")))))
 
+(defn remove-cljtab-lines
+  "Remove cljtab-added lines from shell config files."
+  []
+  (let [bashrc-path (get-bashrc-path)
+        zshrc-path (get-zshrc-path)]
+    
+    (when (bashrc-exists?)
+      (let [content (slurp bashrc-path)
+            lines (str/split-lines content)
+            filtered-lines (remove #(str/includes? % "cljtab") lines)
+            new-content (str/join "\n" filtered-lines)]
+        (when (not= content new-content)
+          (spit bashrc-path new-content)
+          (println "✓ Removed cljtab lines from" bashrc-path))))
+    
+    (when (zshrc-exists?)
+      (let [content (slurp zshrc-path)
+            lines (str/split-lines content)
+            filtered-lines (remove #(str/includes? % "cljtab") lines)
+            new-content (str/join "\n" filtered-lines)]
+        (when (not= content new-content)
+          (spit zshrc-path new-content)
+          (println "✓ Removed cljtab lines from" zshrc-path))))))
+
+(defn clean-cljtab
+  "Remove all cljtab cache files and shell configuration lines."
+  []
+  (let [cache-dir (str (System/getProperty "user.home") "/.cache/cljtab")]
+    (when (fs/exists? cache-dir)
+      (fs/delete-tree cache-dir)
+      (println "✓ Removed cache directory:" cache-dir))
+    (remove-cljtab-lines)
+    (println "✓ Cleaned up cljtab installation")))
+
 (defn install-completion
   ([]
    (let [shell (System/getenv "SHELL")]

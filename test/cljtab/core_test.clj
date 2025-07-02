@@ -44,6 +44,10 @@
     (let [output (with-out-str (core/complete {}))]
       (is (string? output)))))
 
+(deftest test-clean-function
+  (testing "Clean function"
+    (is (nil? (core/clean)))))
+
 (deftest test-edge-cases
   (testing "Empty arguments"
     (is (nil? (core/setup)))
