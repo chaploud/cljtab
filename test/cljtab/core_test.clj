@@ -1,6 +1,6 @@
 (ns cljtab.core-test
   (:require [clojure.test :refer [deftest testing is use-fixtures]]
-            [clojure.java.io :as io]
+            [babashka.fs :as fs]
             [clojure.string :as str]
             [cljtab.core :as core]))
 
@@ -8,17 +8,17 @@
 (def test-deps-edn "{:paths [\"src\"] :aliases {:dev {} :test {}}}")
 
 (defn test-fixture [f]
-  (let [test-dir (io/file test-project-dir)
+  (let [test-dir test-project-dir
         original-dir (System/getProperty "user.dir")]
-    (.mkdirs test-dir)
-    (spit (str test-project-dir "/deps.edn") test-deps-edn)
+    (fs/delete-tree test-dir {:force true})
+    (fs/create-dirs test-dir)
+    (spit (str (fs/path test-dir "deps.edn")) test-deps-edn)
     (try
       (System/setProperty "user.dir" test-project-dir)
       (f)
       (finally
         (System/setProperty "user.dir" original-dir)
-        (doseq [file (reverse (file-seq test-dir))]
-          (.delete file))))))
+        (fs/delete-tree test-dir {:force true})))))
 
 (use-fixtures :each test-fixture)
 

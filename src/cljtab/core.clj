@@ -5,9 +5,11 @@
             [cljtab.setup :as setup]))
 
 (defn setup
-  "Install bash completion integration - public tool function"
-  []
-  (setup/install-bash-completion))
+  "Install shell completion integration - public tool function"
+  ([]
+   (setup/install-completion))
+  ([shell-type]
+   (setup/install-completion shell-type)))
 
 (defn generate
   "Generate completion candidates for current directory - public tool function"
@@ -26,7 +28,9 @@
   "Main entry point for cljtab command line tool"
   [& args]
   (case (first args)
-    "setup" (setup)
+    "setup" (if (second args)
+              (setup (second args))
+              (setup))
     "generate" (generate)
     "complete" (let [parsed-args (-> (second args)
                                      (or "{}")
@@ -34,9 +38,10 @@
                  (complete parsed-args))
     (do (println "cljtab - Clojure CLI Tab Completion")
         (println "")
-        (println "Usage: cljtab <command>")
+        (println "Usage: cljtab <command> [options]")
         (println "")
         (println "Commands:")
-        (println "  setup     Install bash completion integration")
-        (println "  generate  Generate completion candidates for current directory")
-        (println "  complete  Provide completion candidates for bash"))))
+        (println "  setup [shell]  Install shell completion integration")
+        (println "                 shell: bash, zsh, both (default: auto-detect)")
+        (println "  generate       Generate completion candidates for current directory")
+        (println "  complete       Provide completion candidates for shell"))))

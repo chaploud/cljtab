@@ -1,19 +1,21 @@
 (ns cljtab.completion-test
   (:require [clojure.test :refer [deftest testing is use-fixtures]]
-            [clojure.java.io :as io]
+            [babashka.fs :as fs]
             [cljtab.completion :as completion]))
 
 (def test-project-dir "/tmp/cljtab-test-project")
 (def test-deps-edn "{:paths [\"src\"] :deps {} :aliases {:dev {} :test {} :build {} :nrepl {}}}")
 
 (defn test-fixture [f]
-  (let [test-dir (io/file test-project-dir)]
-    (.mkdirs test-dir)
-    (spit (str test-project-dir "/deps.edn") test-deps-edn)
+  (let [test-dir test-project-dir]
+    ;; Clean up before test
+    (fs/delete-tree test-dir {:force true})
+    (fs/create-dirs test-dir)
+    (spit (str (fs/path test-dir "deps.edn")) test-deps-edn)
     (try (f)
          (finally
-           (doseq [file (reverse (file-seq test-dir))]
-             (.delete file))))))
+           ;; Clean up after test
+           (fs/delete-tree test-dir {:force true})))))
 
 (use-fixtures :each test-fixture)
 
@@ -50,8 +52,9 @@
 
   (testing "No deps.edn directory"
     (let [temp-dir "/tmp/no-deps"]
-      (.mkdirs (io/file temp-dir))
+      (fs/delete-tree temp-dir {:force true})
+      (fs/create-dirs temp-dir)
       (try
         (let [candidates (completion/get-completion-candidates temp-dir "-" "clj" ["clj" "-"])]
           (is (some #(= "-A" %) candidates)))
-        (finally (.delete (io/file temp-dir)))))))
+        (finally (fs/delete-tree temp-dir {:force true}))))))

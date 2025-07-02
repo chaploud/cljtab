@@ -1,6 +1,6 @@
 (ns cljtab.completion
   "Tab completion logic for Clojure CLI commands."
-  (:require [clojure.java.io :as io]
+  (:require [babashka.fs :as fs]
             [clojure.edn :as edn]
             [clojure.string :as str]))
 
@@ -35,14 +35,14 @@
 (defn deps-edn-exists?
   "Check if deps.edn exists in the given directory."
   [dir]
-  (.exists (io/file dir "deps.edn")))
+  (fs/exists? (fs/path dir "deps.edn")))
 
 (defn parse-deps-edn
   "Parse deps.edn file from the given directory."
   [dir]
   (try
     (when (deps-edn-exists? dir)
-      (edn/read-string (slurp (io/file dir "deps.edn"))))
+      (edn/read-string (slurp (str (fs/path dir "deps.edn")))))
     (catch Exception e
       (println "Error parsing deps.edn:" (.getMessage e))
       nil)))
@@ -65,7 +65,7 @@
                         :deps-functions deps-functions
                         :tools-functions tools-functions}
         cache-path (cache-file-path dir)]
-    (io/make-parents cache-path)
+    (fs/create-dirs (fs/parent cache-path))
     (spit cache-path (pr-str all-candidates))
     (println "Generated completion candidates for" dir)
     (println "Cache file:" cache-path)
@@ -76,7 +76,7 @@
   [dir]
   (let [cache-path (cache-file-path dir)]
     (try
-      (when (.exists (io/file cache-path))
+      (when (fs/exists? cache-path)
         (edn/read-string (slurp cache-path)))
       (catch Exception _
         (generate-candidates dir)))))

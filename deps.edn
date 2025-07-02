@@ -1,5 +1,1 @@
-{:paths ["src"]
- 
- :aliases
- {:test {:extra-paths ["test"]
-         :main-opts ["-m" "cljtab.test-runner"]}}}
+{:paths ["src"]}

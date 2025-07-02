@@ -6,5 +6,4 @@
         :task (clojure.main/main "-m" "cljtab.test-runner")}}
 
  ;; bbin configuration for installing with 'bbin install'
- :bbin/bin {cljtab {:main-ns cljtab.core
-                    :main-opts ["-m" "cljtab.core"]}}}
+ :bbin/bin {cljtab {:main-opts ["-m" "cljtab.core"]}}}
