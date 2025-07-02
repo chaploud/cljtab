@@ -184,17 +184,17 @@
     ;; First install completion
     (setup/install-bash-completion)
     (setup/install-zsh-completion)
-    
+
     ;; Verify they exist
     (is (fs/exists? (setup/get-completion-file-path)))
     (is (fs/exists? (setup/get-zsh-completion-file-path)))
     (is (setup/bashrc-source-line-exists?))
     (is (setup/zshrc-fpath-exists?))
-    
+
     ;; Clean up
     (let [output (with-out-str (setup/clean-cljtab))]
       (is (str/includes? output "Cleaned up cljtab installation")))
-    
+
     ;; Verify clean state
     (is (not (setup/bashrc-source-line-exists?)))
     (is (not (setup/zshrc-fpath-exists?)))))

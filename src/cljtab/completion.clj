@@ -52,7 +52,7 @@
   (when-let [aliases (:aliases deps-edn)]
     (map #(str ":" (name %)) (keys aliases))))
 
-(defn generate-candidates
+(defn generate
   "Generate completion candidates for the given directory and cache them."
   [dir]
   (let [deps-edn (parse-deps-edn dir)
